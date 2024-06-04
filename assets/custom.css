@@ -1,0 +1,51 @@
+.Tabs {
+    height: fit-content;
+    padding: 5px !important
+}
+
+.piechart {
+    margin-top: 60px;
+}
+
+.Select-control {
+    background-color: #1b4b80e0;
+    text-align: center;
+}
+.custom_navbar {
+    align-items: center;
+    padding: 10px;
+    background-color: rgb(221, 221, 221);
+}
+
+.nav {
+    justify-content: flex-end;
+}
+
+.nav-link.active {
+background-color: #1b4b80 !important;
+color:white;
+}
+
+.tab--selected {
+    background-color: black !important;
+    color:white !important;
+}
+
+.dropdown-heading {
+    color:black;
+    font-size: 18px;
+    padding-bottom: 5px;
+}
+
+.droprow {
+padding-top: 15px;
+  padding-bottom: 15px;
+  border-top: 3px solid;
+  border-bottom: 3px solid;
+  margin-bottom: 15px;
+  background-color: rgba(193, 141, 141, 0.03);
+}
+
+.Select-menu-outer {
+    background-color: #1b4b80;
+}
