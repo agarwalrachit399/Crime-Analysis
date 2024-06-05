@@ -1,14 +1,21 @@
 import psycopg2
 import pandas as pd
+import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
+
+database_uri = os.getenv('NEON_CONNECT_URI')
 def fetch_data_from_postgres():
     try:
-        connection = psycopg2.connect(
-            host="localhost",
-            database="crime_analytics",
-            user="rachitagarwal",
-            password="R@chit2205"
-        )
+        # connection = psycopg2.connect(
+        #     host="localhost",
+        #     database="crime_analytics",
+        #     user="rachitagarwal",
+        #     password="R@chit2205"
+        # )
+        connection = psycopg2.connect(database_uri)
         cursor = connection.cursor()
         print("Connected to database!")
 
@@ -28,4 +35,3 @@ def fetch_data_from_postgres():
         if 'connection' in locals() and connection is not None:
             connection.close()
         print("PostgreSQL connection is closed")
-

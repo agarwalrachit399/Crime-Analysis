@@ -1,8 +1,11 @@
 import pandas as pd
 from sodapy import Socrata
-from pymongo import MongoClient
 import psycopg2
 from psycopg2 import Error
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def fetch_data():
     client = Socrata("data.lacity.org", app_token='jXRSPCTmBeYAiaht4RlaxR23e')
@@ -187,7 +190,7 @@ db_params = {
         "host": "localhost",
         "database": "crime_analytics",
         "user": "rachitagarwal",
-        "password": "R@chit2205"
+        "password": os.getenv('LOCALHOST_PASS')
     }
 store_data_in_postgres(transformed_data,db_params)
 print("Inserted")

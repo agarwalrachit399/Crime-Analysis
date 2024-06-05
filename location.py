@@ -1,7 +1,14 @@
 import requests
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+
 
 def get_coordinates(location):
-    api_key = 'AIzaSyBeKPHK17GwjpcEXwrLiwToJjpGhUrgcAA'
+    api_key = os.getenv('MAPS_API_KEY')
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
     params = {
         "address": location,
@@ -23,7 +30,7 @@ def get_autocomplete_suggestions(input_text):
     base_url = "https://maps.googleapis.com/maps/api/place/autocomplete/json"
     params = {
         "input": input_text,
-        "key": 'AIzaSyBeKPHK17GwjpcEXwrLiwToJjpGhUrgcAA',
+        "key": os.getenv('MAPS_API_KEY'),
         "components": "country:us",
         "locationrestriction": "circle:100000@34.052235,-118.243683"
 
@@ -37,9 +44,4 @@ def get_autocomplete_suggestions(input_text):
         return suggestions
     else:
         return []
-# Example usage
 
-#lat, lng = get_coordinates(location)
-# input_text = "1268 West"  # The text the user is typing
-# suggestions = get_autocomplete_suggestions(input_text)
-# print(suggestions)
