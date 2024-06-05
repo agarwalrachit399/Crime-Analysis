@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-PORT = os.getenv('PORT',8080)
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SPACELAB])
 server = app.server
 sidebar = dbc.Nav(
@@ -54,4 +53,4 @@ app.layout = dbc.Container([
 
 
 if __name__ == "__main__":
-    app.run(port = PORT)
+    app.run_server(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8050)))
