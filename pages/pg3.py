@@ -6,13 +6,11 @@ import dash
 from dash import dcc, html, callback, Output, Input
 import plotly.express as px
 import dash_bootstrap_components as dbc
-# from get_data import fetch_data_from_postgres
-from fetch_datas import fetch_and_clean_data
+from get_data import fetch_data_from_postgres
+
 dash.register_page(__name__, name='Crime')
 
-
-
-data_copy = fetch_and_clean_data()
+data_copy = fetch_data_from_postgres()
 data_copy.set_index('datetime',inplace=True)
 
 part_1 = data_copy[data_copy['part_1_2'].astype(int)==1]

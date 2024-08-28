@@ -2,6 +2,7 @@ import pandas as pd
 from sodapy import Socrata
 import psycopg2
 from psycopg2 import Error
+import psycopg2.extras
 import os
 from dotenv import load_dotenv
 
@@ -123,15 +124,12 @@ def clean_data(data):
 
     return data_copy
 
-
-# def store_data_in_postgres(df,db_params):
+database_uri = os.getenv('COCKROACH_CONNECT_URI')
+def store_data_in_postgres(df):
     try:
-        # Connect to PostgreSQL
-        conn = psycopg2.connect(**db_params)
-        print("Connected")
+        conn = psycopg2.connect(database_uri)
         cursor = conn.cursor()
 
-        # Create table if not exists
         create_table_query = """
         CREATE TABLE IF NOT EXISTS crime_reports (
             id SERIAL PRIMARY KEY,
@@ -153,39 +151,36 @@ def clean_data(data):
         );
         """
         cursor.execute(create_table_query)
-        print("Created The tables")
 
-        # Insert data into the table
-        for index, row in df.iterrows():
-            insert_query = """
-            INSERT INTO crime_reports (
-                dr_no, date_rptd, area_name, part_1_2, vict_age, vict_sex,
-                vict_descent, premis_desc, lat, lon,
-                weapon_desc, day,
-                datetime, crime_cat, hover_desc
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-            """
-            cursor.execute(insert_query, tuple(row))
-            print(f"Inserting {index}")
-
-        # Commit the transaction
+        insert_query = """
+        INSERT INTO crime_reports (
+            dr_no, date_rptd, area_name, part_1_2, vict_age, vict_sex,
+            vict_descent, premis_desc, lat, lon,
+            weapon_desc, day,
+            datetime, crime_cat, hover_desc
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+        """
+        
+        rows = [tuple(row) for _, row in df.iterrows()]
+        psycopg2.extras.execute_batch(cursor, insert_query, rows)
+        
         conn.commit()
         print("Data inserted successfully into PostgreSQL database")
 
-    except (Exception, Error) as error:
+    except Exception as error:
         print("Error while connecting to PostgreSQL", error)
     finally:
         if conn:
             cursor.close()
             conn.close()
-            print("PostgreSQL connection is closed")
+
 
 
 data = fetch_data()
 print("Fetched")
 transformed_data = clean_data(data)
-print(transformed_data.head(10))
+# print(transformed_data.head(10))
 # print("Tranformed")
 # db_params = {
 #         "host": "localhost",
@@ -193,5 +188,5 @@ print(transformed_data.head(10))
 #         "user": "rachitagarwal",
 #         "password": os.getenv('LOCALHOST_PASS')
 #     }
-# store_data_in_postgres(transformed_data,db_params)
-# print("Inserted")
+store_data_in_postgres(transformed_data)
+print("Inserted")
