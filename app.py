@@ -1,10 +1,7 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SPACELAB])
 server = app.server
 sidebar = dbc.Nav(
@@ -53,4 +50,4 @@ app.layout = dbc.Container([
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8050)))
+    app.run_server(debug=False, host='0.0.0.0', port=8080)

@@ -5,12 +5,13 @@ from dash import dcc, html, callback, Output, Input, ctx
 import plotly.express as px
 import dash_bootstrap_components as dbc
 from location import get_coordinates, get_autocomplete_suggestions
-from get_data import fetch_data_from_postgres
+# from get_data import fetch_data_from_postgres
+from fetch_datas import fetch_and_clean_data
 dash.register_page(__name__,name='Map')
 
 
 
-data_copy = fetch_data_from_postgres()
+data_copy = fetch_and_clean_data()
 data_copy.set_index('datetime',inplace=True)
 
 options = [{'label': html.Span([Year], style={'color': 'white'}), 'value':Year} for Year in data_copy.index.year.unique()]

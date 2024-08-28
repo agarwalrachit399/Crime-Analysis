@@ -6,12 +6,13 @@ from dash import dcc, html, callback, Output, Input
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from get_data import fetch_data_from_postgres
+# from get_data import fetch_data_from_postgres
+from fetch_datas import fetch_and_clean_data
 dash.register_page(__name__, path='/', name='Home')
 
 #Read Data
 def read_data():
-    data = fetch_data_from_postgres()
+    data = fetch_and_clean_data()
     data.set_index('datetime',inplace=True)
     return data
 

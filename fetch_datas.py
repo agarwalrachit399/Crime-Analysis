@@ -182,10 +182,13 @@ def clean_data(data):
             print("PostgreSQL connection is closed")
 
 
-data = fetch_data()
-print("Fetched")
-transformed_data = clean_data(data)
-print(transformed_data.head(10))
+
+def fetch_and_clean_data():
+    data = fetch_data()
+    print("Fetched")
+    transformed_data = clean_data(data)
+    print("Transformed")
+    return transformed_data
 # print("Tranformed")
 # db_params = {
 #         "host": "localhost",
