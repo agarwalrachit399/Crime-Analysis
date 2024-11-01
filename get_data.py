@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-database_uri = os.getenv('COCKROACH_CONNECT_URI')
+database_uri = os.getenv('NEON_CONNECT_URI')
 
 _cached_data = None
 
