@@ -11,7 +11,7 @@ from get_data import fetch_data_from_postgres
 dash.register_page(__name__, name='Crime')
 
 data_copy = fetch_data_from_postgres()
-data_copy.set_index('datetime',inplace=True)
+data_copy = data_copy.set_index('datetime')
 
 part_1 = data_copy[data_copy['part_1_2'].astype(int)==1]
 part_2 = data_copy[data_copy['part_1_2'].astype(int)==2]

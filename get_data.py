@@ -4,17 +4,19 @@ import os
 from dotenv import load_dotenv
 
 
+
 load_dotenv()
 
 database_uri = os.getenv('COCKROACH_CONNECT_URI')
+
+_cached_data = None
+
 def fetch_data_from_postgres():
+    global _cached_data
+    if _cached_data is not None:
+        return _cached_data
+
     try:
-        # connection = psycopg2.connect(
-        #     host="localhost",
-        #     database="crime_analytics",
-        #     user="rachitagarwal",
-        #     password="R@chit2205"
-        # )
         connection = psycopg2.connect(database_uri)
         cursor = connection.cursor()
         print("Connected to database!")
@@ -24,6 +26,7 @@ def fetch_data_from_postgres():
         column_names = [desc[0] for desc in cursor.description]
         # Create a DataFrame from the fetched data
         df = pd.DataFrame(rows,columns=column_names)
+        _cached_data = df
         return df  # Print the first few rows of the DataFrame
     except (Exception, psycopg2.Error) as error:
         print("Error fetching data from PostgreSQL", error)

@@ -13,8 +13,8 @@ dash.register_page(__name__, path='/', name='Home')
 #Read Data
 def read_data():
     data = fetch_data_from_postgres()
-    data.set_index('datetime',inplace=True)
-    return data
+    data1 = data.set_index('datetime')
+    return data1
 
 data = read_data()
 

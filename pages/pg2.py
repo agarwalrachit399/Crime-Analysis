@@ -11,8 +11,7 @@ dash.register_page(__name__,name='Map')
 
 
 data_copy = fetch_data_from_postgres()
-data_copy.set_index('datetime',inplace=True)
-
+data_copy = data_copy.set_index('datetime')
 options = [{'label': html.Span([Year], style={'color': 'white'}), 'value':Year} for Year in data_copy.index.year.unique()]
 options.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'}) 
 
@@ -101,4 +100,3 @@ def update_charts(Year,Location):
                 figure=map
             )
         ])
-
