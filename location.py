@@ -2,10 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
-
-
 
 def get_coordinates(location):
     api_key = os.getenv('MAPS_API_KEY')
@@ -38,6 +35,7 @@ def get_autocomplete_suggestions(input_text):
 
     response = requests.get(base_url, params=params)
     results = response.json()
+    print("debug",results)
 
     if "predictions" in results:
         suggestions = [prediction["description"] for prediction in results["predictions"]]
@@ -45,3 +43,31 @@ def get_autocomplete_suggestions(input_text):
     else:
         return []
 
+
+
+def get_locationiq_data(search_value):
+
+
+    url = "https://us1.locationiq.com/v1/autocomplete"
+
+    params = {
+        "q": search_value,
+        "countrycodes": "us",
+        "limit": 5,
+        "viewbox": "-118.67,33.70,-118.15,34.34",
+        "bounded": 1,
+        "key": os.getenv('LOCATIONIQ_API_KEY'),
+
+    }
+    headers = {"accept": "application/json"}
+
+    response = requests.get(url, params=params, headers=headers)
+
+
+    results = response.json()  
+
+    location_data = [{result["display_name"]: (result["lat"], result["lon"])} for result in results]
+    if len(location_data) > 0:
+        return location_data
+    else:
+        return []

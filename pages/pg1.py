@@ -6,25 +6,20 @@ from dash import dcc, html, callback, Output, Input
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-# from get_data import fetch_data_from_postgres
-from get_data import fetch_data_from_postgres
+
+from get_data import fetch_data_from_postgres, fetch_filter_options
 dash.register_page(__name__, path='/', name='Home')
 
-#Read Data
-def read_data():
-    data = fetch_data_from_postgres()
-    data1 = data.set_index('datetime')
-    return data1
 
-data = read_data()
+years, areas, crime_categories, genders, descents = fetch_filter_options()
 
 #Options for Dropdown Filters
-year_option = [{'label': html.Span([Year], style={'color': 'white'}), 'value':Year} for Year in data.index.year.unique()]
-year_option.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'}) 
-area_option = [{'label': html.Span([Area], style={'color': 'white'}), 'value': Area} for Area in data['area_name'].unique()]
-area_option.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'})
-crime_option = [{'label': html.Span([Crime], style={'color': 'white'}), 'value': Crime} for Crime in data['crime_cat'].unique()]
-crime_option.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'})
+year_option = [{'label': html.Span([Year], style={'color': 'white'}), 'value':Year} for Year in years]
+# year_option.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'}) 
+area_option = [{'label': html.Span([Area], style={'color': 'white'}), 'value': Area} for Area in areas]
+# area_option.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'})
+crime_option = [{'label': html.Span([Crime], style={'color': 'white'}), 'value': Crime} for Crime in crime_categories]
+# crime_option.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'})
 
 layout = html.Div(
     children=[
@@ -116,12 +111,11 @@ layout = html.Div(
      ],
 )
 def update_charts(Year,Area,Crime):
-    if Year == 'all':
-        filtered_data = data
-    else:
-        filtered_data = data.loc[data.index.year == Year]
-    filtered_data = filtered_data[filtered_data['area_name']== Area]
-    filtered_data = filtered_data[filtered_data['crime_cat']== Crime]
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    area=Area,
+    crime_category=Crime
+    )
     gender_data = filtered_data['vict_sex']
     gender_counts = gender_data.value_counts().reset_index()
     gender_counts.columns = ['Category', 'Values']
@@ -153,12 +147,11 @@ def update_charts(Year,Area,Crime):
      Input("crime-filter", "value")],
 )
 def update_charts(Year,Area,Crime):
-    if Year == 'all':
-        filtered_data = data
-    else:
-        filtered_data = data.loc[data.index.year == Year]
-    filtered_data = filtered_data[filtered_data['area_name']== Area]
-    filtered_data = filtered_data[filtered_data['crime_cat']== Crime]
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    area=Area,
+    crime_category=Crime
+    )
     descent_data = filtered_data['vict_descent']
     descent_counts = descent_data.value_counts().reset_index()
     descent_counts.columns = ['Category', 'Values']
@@ -212,12 +205,11 @@ def update_charts(Year,Area,Crime):
      Input("crime-filter", "value")],
 )
 def update_charts(Year,Area,Crime):
-    if Year == 'all':
-        filtered_data = data
-    else:
-        filtered_data = data.loc[data.index.year == Year]
-    filtered_data = filtered_data[filtered_data['area_name']== Area]
-    filtered_data = filtered_data[filtered_data['crime_cat']== Crime]
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    area=Area,
+    crime_category=Crime
+    )
 
     filtered_data.loc[filtered_data['vict_age'].astype('int')<=0,'vict_age']=np.nan
     age_sorted = filtered_data['vict_age'].dropna().astype('int').sort_values()
@@ -278,12 +270,11 @@ def update_charts(Year,Area,Crime):
               )
 def render_content(tab,Year,Area,Crime):
     if tab == 'tab-1':
-        if Year == 'all':
-            filtered_data = data
-        else:
-            filtered_data = data.loc[data.index.year == Year]
-        filtered_data = filtered_data[filtered_data['area_name']== Area]
-        filtered_data = filtered_data[filtered_data['crime_cat']== Crime]
+        filtered_data = fetch_data_from_postgres(
+        year=Year,
+        area=Area,
+        crime_category=Crime
+        )
         hourly_data = filtered_data.groupby(filtered_data.index.hour).count()['dr_no'].reset_index()
         scatter = px.bar(hourly_data, x='datetime',y='dr_no',
             color='dr_no',color_continuous_scale=px.colors.sequential.Teal,text='dr_no')
@@ -323,12 +314,11 @@ def render_content(tab,Year,Area,Crime):
             )
         ])
     elif tab == 'tab-2':
-        if Year == 'all':
-            filtered_data = data
-        else:
-            filtered_data = data.loc[data.index.year == Year]
-        filtered_data = filtered_data[filtered_data['area_name']== Area]
-        filtered_data = filtered_data[filtered_data['crime_cat']== Crime]
+        filtered_data = fetch_data_from_postgres(
+        year=Year,
+        area=Area,
+        crime_category=Crime
+        )
         count_crime = filtered_data.groupby(by=["day"]).size().reset_index(name="Count")
         fig1 = px.bar(count_crime, y='day',x='Count',
              color='day',color_discrete_sequence=['#EEF7FF'],color_discrete_map={count_crime['day'][0]:'#CDE8E5'},
@@ -370,12 +360,12 @@ def render_content(tab,Year,Area,Crime):
         ])
     
     elif tab == 'tab-3':
-        if Year == 'all':
-            filtered_data = data
-        else:
-            filtered_data = data.loc[data.index.year == Year]
-        filtered_data = filtered_data[filtered_data['area_name']== Area]
-        filtered_data = filtered_data[filtered_data['crime_cat']== Crime]
+
+        filtered_data = fetch_data_from_postgres(
+        year=Year,
+        area=Area,
+        crime_category=Crime
+        )
         trend_month = filtered_data.resample('M')['dr_no'].count().iloc[:-1]
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(x=trend_month.index, y=trend_month.values,

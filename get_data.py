@@ -1,40 +1,55 @@
-import psycopg2
+
 import pandas as pd
 import os
 from dotenv import load_dotenv
-
-
+from sqlalchemy import create_engine
 
 load_dotenv()
 
-database_uri = os.getenv('NEON_CONNECT_URI')
+engine = create_engine(os.getenv('NEON_DB_URL'))
 
-_cached_data = None
+def fetch_data_from_postgres(year=None, area=None, crime_category=None, gender=None, descent=None, part=None):
+    query = "SELECT * FROM la_crime_data WHERE TRUE"
+    params = {}
 
-def fetch_data_from_postgres():
-    global _cached_data
-    if _cached_data is not None:
-        return _cached_data
+    if year:
+        query += " AND DATE_TRUNC('year', date_rptd) = %(year)s"
+        params['year'] = f"{year}-01-01"
+    if area:
+        query += " AND area_name = %(area)s"
+        params['area'] = area
+    if crime_category:
+        query += " AND crime_cat = %(crime_category)s"
+        params['crime_category'] = crime_category
+    if gender:
+        query += " AND vict_sex = %(gender)s"
+        params['gender'] = gender
+    if descent:
+        query += " AND vict_descent = %(descent)s"
+        params['descent'] = descent
+    if part:
+        query += " AND part_1_2 = %(part)s"
+        params['part'] = part
 
-    try:
-        connection = psycopg2.connect(database_uri)
-        cursor = connection.cursor()
-        print("Connected to database!")
+    df = pd.read_sql(query, engine, params=params, parse_dates=["datetime"])
+    return df.set_index("datetime")
 
-        cursor.execute("SELECT * FROM crime_reports;")
-        rows = cursor.fetchall()
-        column_names = [desc[0] for desc in cursor.description]
-        # Create a DataFrame from the fetched data
-        df = pd.DataFrame(rows,columns=column_names)
-        _cached_data = df
-        return df  # Print the first few rows of the DataFrame
-    except (Exception, psycopg2.Error) as error:
-        print("Error fetching data from PostgreSQL", error)
 
-    finally:
-        # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
-            cursor.close()
-        if 'connection' in locals() and connection is not None:
-            connection.close()
-        print("PostgreSQL connection is closed")
+
+def fetch_filter_options():
+    df = pd.read_sql("SELECT DISTINCT EXTRACT(YEAR FROM date_rptd) AS year FROM la_crime_data", engine)
+    years = sorted(df['year'].dropna().astype(int).unique())
+
+    df2 = pd.read_sql("SELECT DISTINCT area_name FROM la_crime_data", engine)
+    areas = df2['area_name'].dropna().unique()
+
+    df3 = pd.read_sql("SELECT DISTINCT crime_cat FROM la_crime_data", engine)
+    crime_categories = df3['crime_cat'].dropna().unique()
+
+    df4 = pd.read_sql("SELECT DISTINCT vict_sex FROM la_crime_data", engine)
+    genders = df4['vict_sex'].dropna().unique()
+
+    df5 = pd.read_sql("SELECT DISTINCT vict_descent FROM la_crime_data", engine)
+    descents = df5['vict_descent'].dropna().unique()
+
+    return years, areas, crime_categories, genders, descents

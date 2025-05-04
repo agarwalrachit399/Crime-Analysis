@@ -6,24 +6,18 @@ import dash
 from dash import dcc, html, callback, Output, Input
 import plotly.express as px
 import dash_bootstrap_components as dbc
-from get_data import fetch_data_from_postgres
+from get_data import fetch_data_from_postgres, fetch_filter_options
 
 dash.register_page(__name__, name='Crime')
 
-data_copy = fetch_data_from_postgres()
-data_copy = data_copy.set_index('datetime')
+years, areas, crime_categories, genders, descents = fetch_filter_options()
 
-part_1 = data_copy[data_copy['part_1_2'].astype(int)==1]
-part_2 = data_copy[data_copy['part_1_2'].astype(int)==2]
+options = [{'label': html.Span([Year], style={'color': 'white'}), 'value':Year} for Year in years]
+# options.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'}) 
 
-options = [{'label': html.Span([Year], style={'color': 'white'}), 'value':Year} for Year in data_copy.index.year.unique()]
-options.append({'label':html.Span(["All"], style={'color': 'white'}), 'value':'all'}) 
+gender_option = [{'label': html.Span([Premis], style={'color': 'white'}), 'value': Premis} for Premis in genders]
 
-gender_option = [{'label': html.Span([Premis], style={'color': 'white'}), 'value': Premis} for Premis in data_copy['vict_sex'].unique()]
-
-descent_option = [{'label': html.Span([Crime], style={'color': 'white'}), 'value': Crime} for Crime in data_copy['vict_descent'].unique()]
-
-
+descent_option = [{'label': html.Span([Crime], style={'color': 'white'}), 'value': Crime} for Crime in descents]
 
 layout = html.Div(
     children=[
@@ -111,12 +105,17 @@ layout = html.Div(
      Input("descent-filter", "value")], #the input is the year-filter
 )
 def update_charts(Year,Gender,Descent):
-    if Year == 'all':
-        filtered_data = data_copy
-    else:
-        filtered_data = data_copy.loc[data_copy.index.year == Year] #the graph/dataframe will be filterd by "Year"
-    filtered_data = filtered_data.loc[filtered_data['vict_sex'] == Gender]
-    filtered_data = filtered_data.loc[filtered_data['vict_descent'] == Descent] 
+    # if Year == 'all':
+    #     filtered_data = data_copy
+    # else:
+    #     filtered_data = data_copy.loc[data_copy.index.year == Year] #the graph/dataframe will be filterd by "Year"
+    # filtered_data = filtered_data.loc[filtered_data['vict_sex'] == Gender]
+    # filtered_data = filtered_data.loc[filtered_data['vict_descent'] == Descent] 
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    gender=Gender,
+    descent=Descent
+    )
     top_10_premise = filtered_data['premis_desc'].value_counts().head(10).reset_index()
     top_10_premise.columns =['Premis Desc','Count']
     fig10 = px.bar(top_10_premise.sort_values(by='Count'), 
@@ -167,12 +166,11 @@ def update_charts(Year,Gender,Descent):
      Input("descent-filter", "value")],
 )
 def update_charts(Year,Gender,Descent):
-    if Year == 'all':
-        filtered_data = data_copy
-    else:
-        filtered_data = data_copy.loc[data_copy.index.year == Year] #the graph/dataframe will be filterd by "Year"
-    filtered_data = filtered_data.loc[filtered_data['vict_sex'] == Gender]
-    filtered_data = filtered_data.loc[filtered_data['vict_descent'] == Descent] 
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    gender=Gender,
+    descent=Descent
+    )
     top_10_weapon = filtered_data['weapon_desc'].value_counts().head(10).reset_index()
     top_10_weapon.columns =['Weapon Desc','Count']
     fig11 = px.bar(top_10_weapon.sort_values(by='Count'), 
@@ -226,12 +224,12 @@ def update_charts(Year,Gender,Descent):
      Input("descent-filter", "value")],
 )
 def update_charts(Year,Gender,Descent):
-    if Year == 'all':
-        filtered_data = part_1
-    else:
-        filtered_data = part_1.loc[part_1.index.year == Year]
-    filtered_data = filtered_data.loc[filtered_data['vict_sex'] == Gender]
-    filtered_data = filtered_data.loc[filtered_data['vict_descent'] == Descent] 
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    gender=Gender,
+    descent=Descent,
+    part='1'
+    )
     data_subset1 = filtered_data.groupby(["area_name",'crime_cat']).count()['dr_no'].reset_index()
     data_subset1.columns=['AREA NAME','CRIME CATEGORY','COUNT']
     fig7 = px.scatter(
@@ -283,12 +281,13 @@ def update_charts(Year,Gender,Descent):
      Input("descent-filter", "value")],
 )
 def update_charts(Year,Gender,Descent):
-    if Year == 'all':
-        filtered_data = part_2
-    else:
-        filtered_data = part_2.loc[part_2.index.year == Year]
-    filtered_data = filtered_data.loc[filtered_data['vict_sex'] == Gender]
-    filtered_data = filtered_data.loc[filtered_data['vict_descent'] == Descent] 
+
+    filtered_data = fetch_data_from_postgres(
+    year=Year,
+    gender=Gender,
+    descent=Descent,
+    part='2'
+    )
     data_subset2 = filtered_data.groupby(["area_name",'crime_cat']).count()['dr_no'].reset_index()
     data_subset2.columns=['AREA NAME','CRIME CATEGORY','COUNT']
     fig8 = px.scatter(
