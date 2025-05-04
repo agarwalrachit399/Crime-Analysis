@@ -1,15 +1,14 @@
-name: Tag Render Production Deployment
+name: Register Render Deployment
 
 on:
   push:
-    branches:
-      - main  # Change if your production branch is something else
+    branches: [main]
 
 jobs:
-  deployment:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Register Render Deployment with GitHub
+      - name: Register Deployment
         uses: actions/github-script@v7
         with:
           script: |
@@ -29,7 +28,6 @@ jobs:
               repo: context.repo.repo,
               deployment_id: deployment.data.id,
               state: 'success',
-              environment_url: 'https://crime-analysis-pusn.onrender.com',  # 🔁 Replace with your actual Render URL
-              log_url: 'https://dashboard.render.com/web/srv-cpg9lm7109ks73carrv0/logs',  # Optional
+              environment_url: 'https://crime-analysis-pusn.onrender.com',
               description: 'Deployed to Render'
             });
